@@ -1,0 +1,84 @@
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h> // для работы с адресом сокета TCP/IP
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+/*
+    struct sockaddr _in{
+    short sin_family;  Избранное семейство протоколов - всегда AF_INET
+    unsigned short sin_port;  16-битовый номер порта в сетевом порядке байт
+    struct in_addr sin_addr;  Адрес сетевого интерфейса
+    char sin_zero[8];  Это поле не используется, но должно всегда быть заполнено нулями
+    };
+*/
+char msg_1[] = "Hello!";
+char msg_2[] = "Bye!";
+
+void Server();
+//void Client();
+
+void Server()
+{
+    int sock_id;
+    int accept_sock_id;
+    struct sockaddr_in serv_addr;
+    struct sockaddr_in clnt_addr;
+    time_t buff;
+    int bytes_read;
+    int result;
+    sock_id = socket(AF_INET, SOCK_STREAM, 0);
+    if( sock_id < 0 )
+    {
+    perror("socket");
+    printf("\n");
+    exit(-1);
+    }
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons( 12354 );
+    serv_addr.sin_addr.s_addr = htonl( INADDR_ANY );
+    result = bind( sock_id, (struct sockaddr *)&serv_addr, sizeof(struct sockaddr_in));
+    if( result < 0 )
+    {
+    perror("server bind");
+    printf("\n");
+    exit(-1);
+    }
+    result = listen( sock_id, 5);
+    if( result < 0 )
+    {
+    perror("listen");
+    printf("\n");
+    exit(-1);
+    }
+    accept_sock_id = accept( sock_id, NULL, NULL);
+    if( accept_sock_id < 0 )
+    {
+    perror("accept");
+    printf("\n");
+    exit(-1);
+    }
+    sleep(1);
+    bytes_read = recv( accept_sock_id, &buff, sizeof(time_t), 0);
+    if( bytes_read >= 0 )
+    {
+    printf("Bytes read: %d!\n", bytes_read);
+    struct tm time;
+    time = *( localtime(&buff) );
+    printf("Time: %d:%d:%d.\n", time.tm_hour, time.tm_min, time.tm_sec);
+    }
+    else
+    perror("read");
+
+}
+
+
+int main()
+{
+  Server();
+return 0;
+}
