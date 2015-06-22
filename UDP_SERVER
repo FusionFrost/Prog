@@ -1,0 +1,67 @@
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h> // для работы с адресом сокета TCP/IP
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+/*
+    struct sockaddr _in{
+    short sin_family;  Избранное семейство протоколов - всегда AF_INET
+    unsigned short sin_port;  16-битовый номер порта в сетевом порядке байт
+    struct in_addr sin_addr;  Адрес сетевого интерфейса
+    char sin_zero[8];  Это поле не используется, но должно всегда быть заполнено нулями
+    };
+*/
+char msg_1[] = "Hello!";
+char msg_2[] = "Bye!";
+
+void Server();
+//void Client();
+
+void Server()
+{
+    int sock_id;
+    struct sockaddr_in addr;
+    char buff[1024];
+    int bytes_read;
+    sock_id = socket(AF_INET, SOCK_DGRAM, 0);
+    if( sock_id < 0 )
+    {
+    perror("socket");
+    printf("\n");
+    exit(-1);
+    }
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons( 3440 );
+    addr.sin_addr.s_addr = htonl(INADDR_ANY );
+    if( bind( sock_id, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0 )
+    {
+    perror("server bind");
+    printf("\n");
+    exit(-1);
+    }
+
+    bytes_read = recvfrom(sock_id, buff, 1024, 0, NULL, NULL);
+    if( bytes_read > 0 )
+    {
+
+    printf(buff);
+
+    }
+
+    close(sock_id);
+
+
+
+}
+
+
+int main()
+{
+  Server();
+return 0;
+}
