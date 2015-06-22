@@ -1,0 +1,64 @@
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h> // для работы с адресом сокета TCP/IP
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+/*
+    struct sockaddr _in{
+    short sin_family;  Избранное семейство протоколов - всегда AF_INET
+    unsigned short sin_port;  16-битовый номер порта в сетевом порядке байт
+    struct in_addr sin_addr;  Адрес сетевого интерфейса
+    char sin_zero[8];  Это поле не используется, но должно всегда быть заполнено нулями
+    };
+*/
+char msg_1[] = "Hello!";
+char msg_2[] = "Bye!";
+
+
+void Client();
+
+void Client()
+{
+    sleep(1);
+    int sock_id;
+    struct sockaddr_in addr;
+    time_t sec;
+    int bytes_send;
+    int result;
+    sock_id = socket(AF_INET, SOCK_STREAM, 0);
+    if( sock_id < 0 )
+    {
+    perror("socket");
+    printf("\n");
+    exit(-1);
+    }
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons( 12354 );
+    addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
+    result = connect( sock_id, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+    if( result < 0)
+    {
+    perror("connect");
+    printf("\n");
+    exit(-1);
+    }
+    sleep(1);
+    time(&sec);
+    bytes_send = send(sock_id, &sec, sizeof( time_t ), 0);
+    if( bytes_send < 0 )
+    {
+    printf("Can't send data.\n");
+    exit(-1);
+    }
+    printf("Send %d bytes!\n", bytes_send);
+
+}
+    int main()
+    {
+        Client();
+        return 0;
+    }
+
